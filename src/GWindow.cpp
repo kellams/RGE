@@ -167,6 +167,14 @@ namespace RGE
 	XSelectInput(m_display, m_window, ExposureMask | KeyPressMask | ButtonPressMask);
 	XMapWindow(m_display, m_window);
 
+
+	XVisualInfo             *vi;
+	GLint                   att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
+	vi = glXChooseVisual(m_display, 0, att);
+	GLXContext glc = glXCreateContext(m_display, vi, NULL, GL_TRUE);
+ 	glXMakeCurrent(m_display, m_window, glc);
+	glViewport(0, 0, m_width, m_height);
+
 	// Prevent the window from closing
 	m_closeWindow = false;
 
@@ -187,7 +195,8 @@ namespace RGE
 
 	#ifdef __linux__
 		XEvent e;
-		XNextEvent(m_display, &e);
+		while(XPending(m_display))
+            XNextEvent(m_display, &e);
 
 		if (e.type == KeyPress)
 		{
@@ -207,6 +216,10 @@ namespace RGE
 	#ifdef _WIN32
 		SwapBuffers(m_deviceContext);
 	#endif // _WIN32
+
+	#ifdef __linux__
+		glXSwapBuffers(m_display, m_window);
+	#endif // __linux__
 	}
 
 } // RGE
